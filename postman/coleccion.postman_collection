@@ -1,7 +1,7 @@
 {
 	"info": {
 		"_postman_id": "f4f17b75-32f4-4ef6-9d39-269ea4870c59",
-		"name": "Prueba - Técnica SOFKA",
+		"name": "Prueba - Técnica TCS",
 		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
 		"_exporter_id": "13666339"
 	},
@@ -16,7 +16,7 @@
 						"header": [],
 						"body": {
 							"mode": "raw",
-							"raw": "{\r\n  \"customerId\": 1,\r\n  \"personId\": \"1\",\r\n  \"password\": \"123123\"\r\n}",
+							"raw": "{\r\n  \"name\": \"David test\",\r\n  \"gender\": \"M\",\r\n  \"age\": 30,\r\n  \"identification\": \"1727022362\",\r\n  \"address\": \"Quito\",\r\n  \"phone\": \"555-1234\",\r\n  \"password\": \"123456\"\r\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -24,12 +24,12 @@
 							}
 						},
 						"url": {
-							"raw": "http://localhost:8080/clientes",
+							"raw": "http://localhost:8081/clientes",
 							"protocol": "http",
 							"host": [
 								"localhost"
 							],
-							"port": "8080",
+							"port": "8081",
 							"path": [
 								"clientes"
 							]
@@ -43,12 +43,12 @@
 						"method": "GET",
 						"header": [],
 						"url": {
-							"raw": "http://localhost:8080/clientes/1",
+							"raw": "http://localhost:8081/clientes/1",
 							"protocol": "http",
 							"host": [
 								"localhost"
 							],
-							"port": "8080",
+							"port": "8081",
 							"path": [
 								"clientes",
 								"1"
@@ -63,12 +63,12 @@
 						"method": "DELETE",
 						"header": [],
 						"url": {
-							"raw": "http://localhost:8080/clientes/1",
+							"raw": "http://localhost:8081/clientes/1",
 							"protocol": "http",
 							"host": [
 								"localhost"
 							],
-							"port": "8080",
+							"port": "8081",
 							"path": [
 								"clientes",
 								"1"
@@ -81,7 +81,20 @@
 					"name": "Obtener por identificación",
 					"request": {
 						"method": "GET",
-						"header": []
+						"header": [],
+						"url": {
+							"raw": "http://localhost:8081/clientes/by-identification/1727022362",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8081",
+							"path": [
+								"clientes",
+								"by-identification",
+								"1727022362"
+							]
+						}
 					},
 					"response": []
 				}
@@ -97,7 +110,7 @@
 						"header": [],
 						"body": {
 							"mode": "raw",
-							"raw": "{\r\n  \"customerId\": 1,\r\n  \"accountNumber\": \"1234567890123456\",\r\n  \"accountType\": \"Ahorros\",\r\n  \"initialBalance\": 1000.0\r\n}",
+							"raw": "{\r\n  \"customerId\": 1,\r\n  \"identification\": \"1727022362\",\r\n  \"accountNumber\": \"1111111111\",\r\n  \"accountType\": \"Ahorros\",\r\n  \"initialBalance\": 1000.0\r\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -105,12 +118,12 @@
 							}
 						},
 						"url": {
-							"raw": "http://localhost:8080/cuentas",
+							"raw": "http://localhost:8082/cuentas",
 							"protocol": "http",
 							"host": [
 								"localhost"
 							],
-							"port": "8080",
+							"port": "8082",
 							"path": [
 								"cuentas"
 							]
@@ -124,15 +137,15 @@
 						"method": "GET",
 						"header": [],
 						"url": {
-							"raw": "http://localhost:8080/cuentas/1",
+							"raw": "http://localhost:8082/cuentas/10",
 							"protocol": "http",
 							"host": [
 								"localhost"
 							],
-							"port": "8080",
+							"port": "8082",
 							"path": [
 								"cuentas",
-								"1"
+								"10"
 							]
 						}
 					},
@@ -144,12 +157,12 @@
 						"method": "DELETE",
 						"header": [],
 						"url": {
-							"raw": "http://localhost:8080/cuentas/1",
+							"raw": "http://localhost:8082/cuentas/1",
 							"protocol": "http",
 							"host": [
 								"localhost"
 							],
-							"port": "8080",
+							"port": "8082",
 							"path": [
 								"cuentas",
 								"1"
@@ -178,16 +191,16 @@
 							}
 						},
 						"url": {
-							"raw": "http://localhost:8080/movimientos/crear/1",
+							"raw": "http://localhost:8082/movimientos/crear/14",
 							"protocol": "http",
 							"host": [
 								"localhost"
 							],
-							"port": "8080",
+							"port": "8082",
 							"path": [
 								"movimientos",
 								"crear",
-								"1"
+								"14"
 							]
 						}
 					},
@@ -199,15 +212,15 @@
 						"method": "GET",
 						"header": [],
 						"url": {
-							"raw": "http://localhost:8080/movimientos/2",
+							"raw": "http://localhost:8082/movimientos/40",
 							"protocol": "http",
 							"host": [
 								"localhost"
 							],
-							"port": "8080",
+							"port": "8082",
 							"path": [
 								"movimientos",
-								"2"
+								"40"
 							]
 						}
 					},
@@ -219,12 +232,12 @@
 						"method": "DELETE",
 						"header": [],
 						"url": {
-							"raw": "http://localhost:8080/movimientos/1",
+							"raw": "http://localhost:8082/movimientos/1",
 							"protocol": "http",
 							"host": [
 								"localhost"
 							],
-							"port": "8080",
+							"port": "8082",
 							"path": [
 								"movimientos",
 								"1"
@@ -237,7 +250,34 @@
 					"name": "Reporte",
 					"request": {
 						"method": "GET",
-						"header": []
+						"header": [],
+						"url": {
+							"raw": "http://localhost:8082/movimientos/reportes?fecha=2025-02-01,2025-05-31&identification=1727022362",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8082",
+							"path": [
+								"movimientos",
+								"reportes"
+							],
+							"query": [
+								{
+									"key": "",
+									"value": "",
+									"disabled": true
+								},
+								{
+									"key": "fecha",
+									"value": "2025-02-01,2025-05-31"
+								},
+								{
+									"key": "identification",
+									"value": "1727022362"
+								}
+							]
+						}
 					},
 					"response": []
 				}
