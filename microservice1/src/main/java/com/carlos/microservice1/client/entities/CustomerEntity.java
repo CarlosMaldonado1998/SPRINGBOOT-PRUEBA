@@ -19,7 +19,7 @@ public class CustomerEntity {
     private PersonEntity person;
 
     @JsonIgnore
-    @Column(name = "password")
+    @Column(name = "password", nullable = false)
     private String password;
 
     @Column(name = "status")

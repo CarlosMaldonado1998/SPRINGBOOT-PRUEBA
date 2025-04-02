@@ -1,11 +1,9 @@
 package com.carlos.microservice2.core.services;
 
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.List;
 import java.util.Optional;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 
@@ -28,7 +26,6 @@ public class TransactionService implements ITransactionService {
     private final ITransactionRepository transactionRepository;
     private final IAccountRepository accountRepository;
 
-    @Autowired
     public TransactionService(ITransactionRepository transactionRepository, IAccountRepository accountRepository) {
         this.transactionRepository = transactionRepository;
         this.accountRepository = accountRepository;
@@ -58,7 +55,7 @@ public class TransactionService implements ITransactionService {
         return transactionRepository.save(transactionEntity);
     }
 
-    public Optional getTransactionById(Integer id) {
+    public Optional<TransactionEntity> getTransactionById(Integer id) {
         return transactionRepository.findById(id);
     }
 
@@ -95,26 +92,29 @@ public class TransactionService implements ITransactionService {
     }
 
     public List<ReportResponse> generateReport(FilterTransactionDto filter, Long customerId) {
-        System.out.println(filter.getIdentification());
-        System.out.println(filter.getStart());
-        System.out.println(filter.getEnd());
-        List<Object[]> transactions = transactionRepository.findTransactionsByCustomerAndDateRange(
-                filter.getIdentification(), filter.getStart(), filter.getEnd());
+        // Ejecutar la consulta derivada
+        List<TransactionEntity> transactions = transactionRepository
+                .findByAccountCustomerPersonIdentificationAndTransactionDateBetween(
+                        filter.getIdentification(), filter.getStart(), filter.getEnd());
+
+        // Mapear los resultados a ReportResponse
         return mapTransactionsToReportResponse(transactions);
     }
 
-    public List<ReportResponse> mapTransactionsToReportResponse(List<Object[]> transactions) {
+    public List<ReportResponse> mapTransactionsToReportResponse(List<TransactionEntity> transactions) {
         List<ReportResponse> reportResponses = new ArrayList<>();
-        for (Object[] row : transactions) {
+        for (TransactionEntity transaction : transactions) {
             ReportResponse response = new ReportResponse();
-            response.setDate((Date) row[0]);
-            response.setClient((String) row[1]);
-            response.setAccountNumber((String) row[2]);
-            response.setAccountType(row[3] != null ? row[3].toString() : ""); // Asegúrate de manejar valores nulos
-            response.setInitialBalance(row[4] != null ? (Double) row[4] : 0.0); // Valor por defecto si es null
-            response.setStatus(row[5] != null ? (Boolean) row[5] : Boolean.FALSE); // Valor por defecto si es null
-            response.setAmount(row[6] != null ? (Double) row[6] : 0.0); // Valor por defecto si es null
-            response.setBalance(row[7] != null ? (Double) row[7] : 0.0); 
+            response.setDate(transaction.getTransactionDate());
+            response.setClient(transaction.getAccount().getCustomer().getPerson().getName());
+            response.setAccountNumber(transaction.getAccount().getAccountNumber());
+            response.setAccountType(transaction.getAccount().getAccountType());
+            response.setInitialBalance(transaction.getAccount().getInitialBalance());
+            response.setStatus(transaction.getAccount().getStatus());
+            response.setAmount(transaction.getAmount());
+            response.setBalance(transaction.getBalance());
+
+            reportResponses.add(response);
         }
 
         return reportResponses;

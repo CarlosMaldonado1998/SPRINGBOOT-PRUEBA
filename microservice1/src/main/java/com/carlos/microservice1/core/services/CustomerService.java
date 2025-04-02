@@ -1,9 +1,8 @@
 package com.carlos.microservice1.core.services;
 
-
 import java.util.Optional;
 
-import org.springframework.beans.factory.annotation.Autowired;
+
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 
@@ -25,11 +24,11 @@ public class CustomerService implements ICustomerService {
 
     private final ICustomerRepository customerRepository;
     private final IPersonRepository personRepository;
-    
+
     private final PersonService personService;
 
-    @Autowired
-    public CustomerService(ICustomerRepository customerRepository, IPersonRepository personRepository, PersonService personService) {
+    public CustomerService(ICustomerRepository customerRepository, IPersonRepository personRepository,
+            PersonService personService) {
         this.customerRepository = customerRepository;
         this.personRepository = personRepository;
         this.personService = personService;
@@ -37,7 +36,8 @@ public class CustomerService implements ICustomerService {
 
     @Transactional
     public CustomerEntity createCustomer(CreateCustomerDto createCustomerDto) {
-        
+
+        // Crear un objeto PersonDto a partir de los datos del DTO de cliente
         PersonDto newPerson = new PersonDto();
         newPerson.setAddress(createCustomerDto.getAddress());
         newPerson.setAge(createCustomerDto.getAge());
@@ -46,6 +46,7 @@ public class CustomerService implements ICustomerService {
         newPerson.setName(createCustomerDto.getName());
         newPerson.setPhone(createCustomerDto.getPhone());
 
+        // Crear la persona asociada
         PersonEntity person = personService.createPerson(newPerson);
 
         Optional<PersonEntity> existingPerson = personRepository.findById(person.getPersonId());
@@ -57,6 +58,7 @@ public class CustomerService implements ICustomerService {
         customerEntity.setPassword(createCustomerDto.getPassword());
         customerEntity.setPerson(existingPerson.get()); 
 
+        // Guardar y devolver el cliente
         return customerRepository.save(customerEntity);
     }
 
@@ -74,7 +76,6 @@ public class CustomerService implements ICustomerService {
         if (existingCustomerOpt.isPresent()) {
             CustomerEntity existingCustomer = existingCustomerOpt.get();
             existingCustomer.setPassword(customerDTO.getPassword());
-            existingCustomer.setStatus(customerDTO.getStatus());
             return customerRepository.save(existingCustomer);
         } else {
             throw new EntityNotFoundException("El cliente con ID " + id + " no se ha encontrado");

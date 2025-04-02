@@ -1,4 +1,4 @@
-package com.carlos.microservice2.client.entities;
+package com.carlos.microservice1.client.entities;
 
 import jakarta.persistence.*;
 import lombok.Data;

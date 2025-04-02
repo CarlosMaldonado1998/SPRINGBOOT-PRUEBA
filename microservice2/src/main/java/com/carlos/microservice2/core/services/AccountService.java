@@ -3,11 +3,11 @@ package com.carlos.microservice2.core.services;
 import java.util.List;
 import java.util.Optional;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 
 import com.carlos.microservice2.client.entities.AccountEntity;
+import com.carlos.microservice2.client.entities.CustomerEntity;
 import com.carlos.microservice2.client.entities.TransactionEntity;
 import com.carlos.microservice2.client.repositories.IAccountRepository;
 import com.carlos.microservice2.client.repositories.ITransactionRepository;
@@ -20,7 +20,6 @@ import com.carlos.microservice2.vo.dto.CreateTransactionDto;
 import jakarta.persistence.EntityNotFoundException;
 import jakarta.transaction.Transactional;
 
-
 @Service
 public class AccountService implements IAccountService {
 
@@ -28,7 +27,6 @@ public class AccountService implements IAccountService {
     private final ITransactionRepository transactionRepository;
     private final ClientService clientService;
 
-    @Autowired
     public AccountService(IAccountRepository accountRepository,
             ITransactionRepository transactionRepository,
             ClientService clientService) {
@@ -49,8 +47,8 @@ public class AccountService implements IAccountService {
             throw new CustomBadRequestException("Tipo de cuenta inválido. Debe ser 'Ahorros' o 'Corriente'.",
                     HttpStatus.BAD_REQUEST);
         }
-        Long customerId = clientService.getCustomerIdByIdentification(createAccountDto.getIdentification());
-        if (customerId == null) {
+        CustomerEntity customer = clientService.getCustomerIdByIdentification(createAccountDto.getIdentification());
+        if (customer.getCustomerId() == null) {
             throw new CustomBadRequestException("Client no encontrado", HttpStatus.NOT_FOUND);
         }
         AccountEntity accountEntity = new AccountEntity();
@@ -59,7 +57,7 @@ public class AccountService implements IAccountService {
         accountEntity.setInitialBalance(createAccountDto.getInitialBalance());
         accountEntity.setBalance(createAccountDto.getInitialBalance());
         accountEntity.setStatus(createAccountDto.getStatus());
-        accountEntity.setCustomerId(customerId);
+        accountEntity.setCustomer(customer);
 
         return accountRepository.save(accountEntity);
 
@@ -112,32 +110,37 @@ public class AccountService implements IAccountService {
 
         AccountEntity account = accounts.get(0);
 
-        // Verificar si el saldo es suficiente para un retiro (si el tipo de transacción
-        // es "Retiro")
-        if ("Retiro".equals(createTransactionDto.getTransactionType())
-                && account.getBalance() < createTransactionDto.getAmount()) {
-            throw new CustomBadRequestException("Saldo no disponible", HttpStatus.CONFLICT);
+        Double amount = createTransactionDto.getAmount();
+        if ("Retiro".equals(createTransactionDto.getTransactionType())) {
+            if (amount > 0) {
+                throw new CustomBadRequestException("El monto para un retiro debe ser negativo.",
+                        HttpStatus.BAD_REQUEST);
+            }
+            if (account.getBalance() < Math.abs(amount)) {
+                throw new CustomBadRequestException("Saldo no disponible para realizar el retiro.",
+                        HttpStatus.CONFLICT);
+            }
+        } else if ("Depósito".equals(createTransactionDto.getTransactionType())) {
+            if (amount < 0) {
+                throw new CustomBadRequestException("El monto para un depósito debe ser positivo.",
+                        HttpStatus.BAD_REQUEST);
+            }
+        } else {
+            throw new CustomBadRequestException("Tipo de transacción no válido.", HttpStatus.BAD_REQUEST);
         }
 
-        Double amount = Math.abs(createTransactionDto.getAmount());
-
+        // Crear la transacción
         TransactionEntity transaction = new TransactionEntity();
         transaction.setAccount(account);
         transaction.setTransactionDate(new java.sql.Date(System.currentTimeMillis()));
         transaction.setTransactionType(createTransactionDto.getTransactionType());
-        transaction.setAmount(amount);
         transaction.setStatus(true);
 
-        // Actualizar el saldo de la cuenta dependiendo del tipo de transacción
-        Double newBalance;
-        if ("Depósito".equals(createTransactionDto.getTransactionType())) {
-            newBalance = account.getBalance() + amount;
-        } else if ("Retiro".equals(createTransactionDto.getTransactionType())) {
-            newBalance = account.getBalance() - amount;
-        } else {
-            throw new CustomBadRequestException("Tipo de transacción no válido", HttpStatus.BAD_REQUEST);
-        }
+        // Calcular el nuevo saldo
+        Double newBalance = account.getBalance() + amount;
 
+        // Guardar el nuevo saldo en la transacción y en la cuenta
+        transaction.setAmount(amount);
         transaction.setBalance(newBalance);
         transactionRepository.save(transaction);
         account.setBalance(newBalance);

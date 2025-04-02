@@ -1,6 +1,5 @@
 package com.carlos.microservice1.core.services;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 
@@ -21,7 +20,6 @@ public class PersonService implements IPersonService{
 
     private final IPersonRepository personRepository;
 
-    @Autowired
     public PersonService(IPersonRepository personRepository) {
         this.personRepository = personRepository;
     }

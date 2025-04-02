@@ -1,15 +1,16 @@
 package com.carlos.microservice2.service.controllers;
 
-import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
+import com.carlos.microservice2.client.entities.CustomerEntity;
 import com.carlos.microservice2.client.entities.TransactionEntity;
 import com.carlos.microservice2.core.services.AccountService;
 import com.carlos.microservice2.core.services.ClientService;
 import com.carlos.microservice2.core.services.TransactionService;
-import com.carlos.microservice2.service.common.CustomNotFoundException;
+import com.carlos.microservice2.service.common.CustomBadRequestException;
 import com.carlos.microservice2.vo.dto.CreateTransactionDto;
 import com.carlos.microservice2.vo.dto.FilterTransactionDto;
 import com.carlos.microservice2.vo.dto.TransactionDto;
@@ -29,7 +30,6 @@ public class TransactionController {
     private final AccountService accountService;
     private final ClientService clientService;
 
-    @Autowired
     public TransactionController(TransactionService transactionService, AccountService accountService,
             ClientService clientService) {
         this.transactionService = transactionService;
@@ -79,6 +79,14 @@ public class TransactionController {
 
     }
 
+    /**
+     * Genera un reporte de estado de cuenta para un cliente en un rango de fechas.
+     * 
+     * @param fecha          Rango de fechas en formato 'yyyy-MM-dd,yyyy-MM-dd'.
+     * @param identification Identificación del cliente.
+     * @return Lista de reportes en formato JSON.
+     */
+
     @GetMapping("/reportes")
     public ResponseEntity<List<ReportResponse>> getReport(
             @RequestParam String fecha,
@@ -90,14 +98,22 @@ public class TransactionController {
             throw new IllegalArgumentException("El parámetro fecha debe ser en formato 'yyyy-MM-dd,yyyy-MM-dd'");
         }
 
-        Date startDate = Date.valueOf(fechas[0]);
-        Date endDate = Date.valueOf(fechas[1]);
+        Date startDate;
+        Date endDate;
 
+        try {
+            startDate = Date.valueOf(fechas[0]);
+            endDate = Date.valueOf(fechas[1]);
+        } catch (IllegalArgumentException e) {
+            throw new CustomBadRequestException("El formato de las fechas debe ser 'yyyy-MM-dd'",
+                    HttpStatus.BAD_REQUEST);
+        }
         // Obtener el customerId desde la identificación
-        Long customerId = clientService.getCustomerIdByIdentification(identification);
+        CustomerEntity customerId = clientService.getCustomerIdByIdentification(identification);
 
         if (customerId == null) {
-            throw new CustomNotFoundException("Cliente no encontrado con identificación: " + identification);
+            throw new CustomBadRequestException("Cliente no encontrado con identificación: " + identification,
+                    HttpStatus.NOT_FOUND);
         }
 
         FilterTransactionDto filter = new FilterTransactionDto();
@@ -105,7 +121,7 @@ public class TransactionController {
         filter.setEnd(endDate);
         filter.setIdentification(identification);
 
-        List<ReportResponse> report = transactionService.generateReport(filter, customerId);
+        List<ReportResponse> report = transactionService.generateReport(filter, customerId.getCustomerId().longValue());
 
         return ResponseEntity.ok(report);
     }
